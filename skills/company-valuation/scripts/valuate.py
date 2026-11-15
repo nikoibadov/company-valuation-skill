@@ -27,6 +27,7 @@ DEFAULTS = {
     "company": "SAP",
     "edition": "web",                         # SAP only: web | data | both
     "data_sources": {"capiq_dir": None, "bloomberg_yaml": None},
+    "valuation_date": None,                   # YYYY-MM-DD or "today". null = SAP: 13 Nov 2026 case date; other tickers: today
     "price": None,
     "assumptions": {"erp": "house"},          # erp: house | damodaran | number; others: number
     "weights": {"DCF": 0.5, "Comparable companies": 0.25, "Precedent transactions": 0.25},
@@ -78,14 +79,34 @@ def load_config(path: str | None) -> dict:
         v = cfg["assumptions"].get(k)
         if isinstance(v, float) and not 0 <= v < 0.3:
             errs.append(f"{k}={v} looks wrong: enter percentages as decimals (0.05 for 5%)")
+    try:
+        cfg["valuation_date"] = resolve_date(cfg["valuation_date"], cfg["is_sap"])
+    except (ValueError, TypeError) as e:
+        errs.append(str(e))
     if errs:
         raise SystemExit("Config problems:\n  - " + "\n  - ".join(errs))
     return cfg
 
 
+def resolve_date(v, is_sap: bool) -> str:
+    """Valuation date as ISO text, checked against what the model can support."""
+    today = dt.date.today().isoformat()
+    if isinstance(v, dt.date):
+        v = v.isoformat()
+    if v in (None, "", "default"):
+        v = CASE_DATE if is_sap else today
+    if str(v).lower() == "today":
+        v = today
+    from valuation import generic
+    from valuation.loaders import common
+    return common.check_sap_date(v) if is_sap else generic.check_date(v)
+
+
 # ------------------------------------------------------------------ sources
 def cmd_sources(a) -> None:
-    out = {"python": sys.version.split()[0], "sap_case_date": CASE_DATE, "today": dt.date.today().isoformat()}
+    out = {"python": sys.version.split()[0], "sap_case_date": CASE_DATE, "today": dt.date.today().isoformat(),
+           "valuation_date_range": {"SAP": ["2026-09-30", dt.date.today().isoformat()],
+                                   "other_tickers": [(dt.date.today() - dt.timedelta(days=5 * 365)).isoformat(), dt.date.today().isoformat()]}}
     if a.data_dir:
         os.environ["SAP_DATA_DIR"] = a.data_dir
     if a.bloomberg_yaml:
@@ -122,11 +143,13 @@ def run_sap(cfg: dict, out: Path) -> dict:
     if ds_.get("bloomberg_yaml"):
         os.environ["SAP_BLOOMBERG_YAML"] = str(Path(ds_["bloomberg_yaml"]).expanduser())
     os.environ["VALUATION_OUT"] = str(out)
+    os.environ.setdefault("VALUATION_CACHE", str(out / ".cache"))      # downloads are cached next to the outputs, never inside the skill
     import sap_runner
     from valuation import precedents
     from valuation.loaders import common
 
     sap_runner.OUT = out
+    common.set_valuation_date(cfg["valuation_date"])
     if cfg["edition"] in ("data", "both"):
         from valuation.loaders import capiq
         if not capiq.available():
@@ -176,10 +199,10 @@ def run_generic(cfg: dict, out: Path) -> dict:
     if cfg["price"]:
         ov["price"] = float(cfg["price"])
     peers = list(cfg["peers"]["tickers"])
-    res = generic.run(cfg["company"], overrides=ov, peer_tickers=peers)
+    res = generic.run(cfg["company"], overrides=ov, peer_tickers=peers, vdate=cfg["valuation_date"])
     p = res["inputs"]
     cur = {"EUR": "€", "USD": "$", "GBP": "£", "JPY": "¥", "CHF": "CHF "}.get(p["q_ccy"], p["q_ccy"] + " ")
-    today = dt.date.today().isoformat()
+    today = cfg["valuation_date"]
     tag = p["ticker"].replace(".", "_")
     if cfg["outputs"]["excel"]:
         x, cell = gx.write_workbook(res, out / f"{tag}_Valuation.xlsx", cfg["weights"])
@@ -205,7 +228,9 @@ edition: web                  # SAP only: web (public data) | data (Capital IQ +
 data_sources:                 # data edition only
   capiq_dir: null             # folder that contains 'S&P Capital IQ/SAP/*.xlsx'
   bloomberg_yaml: null        # your transcription of the Bloomberg screenshots
-price: null                   # null = latest close; or a number to override
+valuation_date: null          # YYYY-MM-DD or "today". null = SAP 13 Nov 2026 (case date) / today for other tickers
+                              # SAP range 2026-09-30..today; other tickers up to 5 years back. Drives price, rates, beta window, roll-forward
+price: null                   # null = close on the valuation date; or a number to override
 assumptions:
   erp: house                  # house (5.0%) | damodaran (live implied ERP) | a number such as 0.0429
   # beta: 0.98              # optional overrides, decimals: rf, beta, kd, g, tax_wacc (any company); tax, margin_target (tickers)
@@ -239,7 +264,7 @@ def ai_log(cfg: dict) -> str:
     return "\n".join([
         "# AI usage log (fill in the judgment calls)", "",
         f"- Date: {dt.date.today().isoformat()}", f"- Company: {cfg['company']}, edition: {cfg['edition']}",
-        f"- Config used: valuation_config_used.yaml", "",
+        f"- Valuation date: {cfg['valuation_date']}", f"- Config used: valuation_config_used.yaml", "",
         "## What the AI did", "- Asked the interview questions, wrote the config, ran `valuate.py`, read the outputs.", "",
         "## Judgment calls a human must sign off", "- Peer set, ERP, beta, terminal growth, margin path, deal selection (SAP precedents).", "",
         "## Issues found and fixed", "- (add here)"])

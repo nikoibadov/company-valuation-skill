@@ -1,11 +1,13 @@
 {
   "name": "company-valuation-skill",
-  "owner": { "name": "Team 5, AIFA WiSe 26/27" },
+  "owner": {
+    "name": "Team 5, AIFA WiSe 26/27"
+  },
   "plugins": [
     {
       "name": "company-valuation",
       "source": "./",
-      "description": "Interview-driven company valuation skill (DCF, comps, precedents, Excel, football field)."
+      "description": "Interview-driven company valuation: pick company, date, data sources and method weights; get a checked Excel workbook, football field and summary."
     }
   ]
 }

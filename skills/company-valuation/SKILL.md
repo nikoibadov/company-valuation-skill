@@ -1,6 +1,6 @@
 ---
 name: company-valuation
-description: Value a listed company with an FCFF DCF, trading comparables and (for SAP) precedent transactions, and deliver a checked Excel workbook, football-field chart and summary. Interviews the user first about the company, data sources, WACC basis, weighting, peers and outputs. Use when asked to value, price, run a DCF on, or build a football field for a company, or to re-run the SAP SE valuation case.
+description: Value a listed company as of a chosen date with an FCFF DCF, trading comparables and (for SAP) precedent transactions, and deliver a checked Excel workbook, football-field chart and summary. Interviews the user first about the company, valuation date, data sources, WACC basis, weighting, peers and outputs. Use when asked to value, price, run a DCF on, or build a football field for a company, or to re-run the SAP SE valuation case.
 ---
 
 # Company valuation
@@ -12,7 +12,7 @@ Two models sit behind one command:
 
 | Mode | Used for | What you get |
 |---|---|---|
-| **SAP case study** (`company: SAP`) | AIFA Assignment 2, valuation date 13 Nov 2026 | Segment-driven DCF, comps, precedents, DDM, Monte Carlo, 19-sheet formula-driven Excel, football field |
+| **SAP case study** (`company: SAP`) | AIFA Assignment 2; default valuation date 13 Nov 2026, any date from 30 Sep 2026 to today | Segment-driven DCF, comps, precedents, DDM, Monte Carlo, 19-sheet formula-driven Excel, football field |
 | **Any ticker** (`company: NVDA`, `MC.PA`, `7203.T`) | Any listed non-financial company | One-segment DCF, peer comps, scenarios, formula-driven DCF workbook, football field |
 
 Paths below are relative to this skill's folder (the folder holding this file).
@@ -40,19 +40,26 @@ files (then see "Data edition without a transcription" below).
 ### 2. Interview the user
 
 Read `questions.yaml` and ask with `AskUserQuestion`, **at most four questions per call**, in the order of the rounds
-(Scope, then Details). Skip a question whose `when` does not hold (for example the data-edition options when the company
+(Scope, then Details; the date question is in Scope). Skip a question whose `when` does not hold (for example the data-edition options when the company
 is not SAP). Put the recommended option first. Then:
 
 - If **Company** is "another listed company", ask for the Yahoo Finance ticker in plain text (exchange suffix for non-US
   names: `.DE`, `.PA`, `.L`, `.T`). Confirm the resolved company name and currency after the first run.
+- **Valuation date.** The date sets the closing price, the 10-year government yield, the beta regression window, the
+  roll-forward from the balance sheet (SAP: from 30 Sep 2026) and which precedent deals count (only those announced by
+  that date). SAP accepts 30 Sep 2026 to today; other tickers up to five years back (`sources` prints the range).
+  Take the date as `YYYY-MM-DD`; "today" and the SAP case date are options. **Say what an earlier date does not change:**
+  peer multiples, consensus, analyst targets and the company's financial statements are the latest available, so they
+  contain information published after that date (the outputs carry a look-ahead warning). For a true historical
+  valuation the user needs a point-in-time data source such as Capital IQ.
 - If **WACC basis** is "Custom numbers", ask for ERP and any of beta, risk-free rate, cost of debt, terminal growth.
   Convert percentages to decimals (5% becomes 0.05); `valuate.py` rejects values that look like whole percentages.
 - If **Peers** is "AI-proposed" for a ticker, propose 6 to 10 listed peers with the same business model and a similar
   growth and margin profile, one line of reasoning each, and **wait for the user's confirmation**. This is a judgment step.
 - If **Peers** is "I will give the tickers", take Yahoo tickers; for SAP the tickers are forced in (`include`) or
   dropped (`exclude`) from the built-in core set (see `scripts/valuation/loaders/common.py`, `PEER_CLASS`).
-- If **Assumptions** is "Walk me through the key ones first", run once, show the assumption table from the output
-  (terminal growth, margin path, beta, cost of debt, each with its source), take the user's changes, then re-run.
+
+After the first run, show the key assumptions (terminal growth, margin path, beta, cost of debt, each with its source) and ask whether to change any before you report; re-run if so.
 
 State plainly what an option does not do. For example, precedent transactions exist only for SAP, so for a ticker the
 weights renormalise to DCF and comps.
@@ -81,6 +88,7 @@ Read the summary and check before presenting. Flag anything that trips:
 - Terminal value above about 75% of enterprise value, or WACC within 2 points of terminal growth.
 - Peer EV/EBIT quartiles very wide, or fewer than 5 peers in a multiple. Say the comps bar is weak.
 - A company with negative operating income, a bank, an insurer or a REIT: the one-segment FCFF model does not fit; tell the user and stop.
+- Valuation date earlier than today: the look-ahead warning must appear in the report, not only in the files.
 - SAP: the data edition keeps the 5 Nov 2026 Bloomberg rates with the 13 Nov price; the web edition uses 13 Nov market data. Name the difference when both are shown.
 
 ### 5. Report

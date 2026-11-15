@@ -170,6 +170,8 @@ def write_workbook(res: dict, path: Path, weights: dict | None = None) -> tuple[
             "Data: Yahoo Finance (prices, statements, consensus), central-bank risk-free rate, Damodaran-style spreads. Public data only.",
             "The DCF sheet recalculates from the Inputs sheet. Comps, scenarios and sensitivities are values from the Python engine.",
             "Limits: one-segment model driven by TTM margins and consensus growth; banks and insurers need a different model.",
+            f"Valuation date: {res.get('meta', {}).get('valuation_date', '')}. Price, risk-free rate, beta window and 52-week range are as of that date; "
+            "peer multiples, consensus and analyst targets are the latest available" + (" (they include information published after the valuation date)." if res.get("meta", {}).get("lookahead") else "."),
             "Football-field weights: " + (", ".join(f"{k} {v:.0%}" for k, v in (weights or {}).items()) or "none")], 1):
         n.cell(i, 1, t).alignment = Alignment(wrap_text=True)
     n.column_dimensions["A"].width = 120
@@ -225,5 +227,8 @@ def summary_md(res: dict, weights: dict, currency: str, valuation_date: str) -> 
             f"- Peers used: {len(peers)}" + (f" ({', '.join(peers['ticker'])})" if len(peers) else " (none: comps skipped)"),
             "", "## Where each input comes from"]
     out += [f"- **{k}**: {v}" for k, v in p.get("sources", {}).items()]
+    if res.get("meta", {}).get("lookahead"):
+        out += ["", f"**Look-ahead warning:** the valuation date ({valuation_date}) is earlier than today. Price, risk-free rate, beta window and the 52-week range are as of that date, "
+                    "but peer multiples, consensus estimates, analyst targets and the financial statements are the latest available and include later information."]
     out += ["", "Limits: single-segment model on public data. Check every assumption before relying on the number."]
     return "\n".join(out)

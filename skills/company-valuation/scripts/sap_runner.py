@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
 from valuation import assumptions, charts, excel_writer, pipeline, verify  # noqa: E402
+from valuation.loaders import common  # noqa: E402
 
 import os  # noqa: E402
 OUT = Path(os.environ.get("VALUATION_OUT", ROOT / "output"))
@@ -44,7 +45,7 @@ def run_edition(edition: str, price: float | None = None, check: bool = True, ov
     res = pipeline.run(ds, a)
     OUT.mkdir(parents=True, exist_ok=True)
     charts.football(res, OUT / f"football_{edition}.png",
-                    f"SAP SE valuation football field, {edition.upper()} edition (€/share, 13 Nov 2026)")
+                    f"SAP SE valuation football field, {edition.upper()} edition (€/share, {common.fmt_date(res['meta']['valuation_date'])})")
     charts.revenue_mix(res, OUT / f"revenue_mix_{edition}.png")
     charts.tornado(res, OUT / f"tornado_{edition}.png")
     charts.monte_carlo(res, OUT / f"monte_carlo_{edition}.png")
@@ -64,7 +65,7 @@ def run_edition(edition: str, price: float | None = None, check: bool = True, ov
 def summary_md(res: dict) -> str:
     d, sc, cp, mk, a = res["dcf"], res["scenarios"], res["comps"], res["market"], res["assumptions"]
     st = cp["stats"]
-    L = [f"# SAP SE valuation - {res['edition'].upper()} edition (valuation date 13 Nov 2026)", "",
+    L = [f"# SAP SE valuation - {res['edition'].upper()} edition (valuation date {common.fmt_date(res['meta']['valuation_date'])})", "",
          f"**DCF value: €{d['price']:.2f} per share** vs reference price €{mk['price']:.2f} ({mk['price_source']}, {mk['price_date']}) "
          f"→ {d['upside']*100:+.1f}%. Probability-weighted scenarios: €{sc['Weighted']['price']:.2f} "
          f"(bear €{sc['Bear']['price']:.0f} / base €{sc['Base']['price']:.0f} / bull €{sc['Bull']['price']:.0f}).", "",
@@ -78,6 +79,7 @@ def summary_md(res: dict) -> str:
           f"- Implied EV/NTM sales {d['implied_ev_sales_ntm']:.1f}x and EV/NTM EBIT {d['implied_ev_ebit_ntm']:.1f}x vs core-peer medians {st['ev_sales_ntm']['median']:.1f}x / {st['ev_ebit_ntm']['median']:.1f}x",
           f"- 2030E revenue €{d['forecast'].loc[2030,'revenue']/1000:.1f}bn (cloud {d['forecast'].loc[2030,'cloud_share']*100:.0f}%), FCFF 2027E €{d['forecast'].loc[2027,'fcff']/1000:.1f}bn",
           f"- Growth-adjusted regression: EV/NTM sales = {cp['regression']['intercept']:.2f} + {cp['regression']['slope']:.3f} x Rule-of-40 (R² {cp['regression']['r2']:.2f}, n={cp['regression']['n']})",
+          *([f"- Valuation date {common.fmt_date(res['meta']['valuation_date'])} is earlier than the run date: price, Bund yield and beta window are as of that date; peer multiples, consensus and analyst targets are the latest available (they include later information)"] if res['meta'].get('lookahead') else []),
           *ext_md(res),
           "", "## FCFF 2027E-2030E (€m)", "", "| | 2026E | 2027E | 2028E | 2029E | 2030E |", "|---|---:|---:|---:|---:|---:|"]
     f = d["forecast"]
@@ -143,8 +145,10 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--edition", choices=["data", "web", "both"], default="both")
     ap.add_argument("--price", type=float, default=None, help="override reference share price (EUR); default is the 13 Nov 2026 close from Yahoo Finance")
+    ap.add_argument("--date", default=None, help="valuation date YYYY-MM-DD (30 Sep 2026 .. today); default 13 Nov 2026")
     ap.add_argument("--no-check", action="store_true")
     args = ap.parse_args()
+    common.set_valuation_date(args.date)
     eds = ["data", "web"] if args.edition == "both" else [args.edition]
     out = {e: run_edition(e, args.price, not args.no_check) for e in eds}
     if len(out) == 2:

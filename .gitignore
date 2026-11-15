@@ -10,3 +10,4 @@ bloomberg.yaml
 !tests/*.xlsx
 .DS_Store
 .pytest_cache/
+data/

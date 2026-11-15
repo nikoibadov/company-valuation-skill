@@ -18,3 +18,16 @@ One segment: consensus growth for years 1-2 (Yahoo Finance), then a linear path;
 - Yahoo data can be wrong or stale; check price, shares, debt and revenue estimates against the company's filings before relying on the number.
 - The any-ticker margin path is flat by default. A company mid-turnaround or with a structurally rising margin needs `margin_target` set by the user.
 - Precedent transactions carry a control premium; read them as a cross-check, not a price.
+
+## Valuation date
+The date is an input (`valuation_date` in the config). What it moves and what it does not:
+
+| Follows the date | Stays at the latest available |
+|---|---|
+| Closing price (last close on or before the date) | Peer multiples (EV/sales, EV/EBIT, P/E) |
+| 10-year government yield (Bundesbank, or US Treasury) | Consensus revenue and EPS estimates |
+| Beta regression window (5 years ending on the date) | Analyst price targets |
+| 52-week range (history up to the date) | Financial statements (last reported period) |
+| SAP: roll-forward days from the 30 Sep 2026 balance sheet; precedent deals announced after the date drop out | SAP Data edition: Bloomberg rates of 5 Nov 2026 |
+
+Ranges: SAP 30 Sep 2026 (balance sheet date) to today; other tickers up to five years back to today. An earlier date therefore produces a value that uses some information published after it. Outputs say so (look-ahead warning). It is a "what would today's model say at that price and rate level" run, not a point-in-time reconstruction.

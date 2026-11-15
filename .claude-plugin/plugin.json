@@ -1,8 +1,16 @@
 {
   "name": "company-valuation",
-  "version": "1.0.0",
-  "description": "Interview-driven company valuation: FCFF DCF, comps and precedents with a checked Excel workbook and football field. Includes the SAP SE case-study model.",
-  "author": { "name": "Team 5, AIFA WiSe 26/27" },
+  "version": "1.1.0",
+  "description": "Asks which company, valuation date, data sources, WACC view, weighting and peers, then values the company (FCFF DCF, comps, precedents) and returns a checked Excel workbook, football-field chart and summary. Includes the SAP SE case-study model.",
+  "author": {
+    "name": "Team 5, AIFA WiSe 26/27"
+  },
   "license": "MIT",
-  "keywords": ["valuation", "dcf", "finance", "excel", "football-field"]
+  "keywords": [
+    "valuation",
+    "dcf",
+    "finance",
+    "excel",
+    "football-field"
+  ]
 }

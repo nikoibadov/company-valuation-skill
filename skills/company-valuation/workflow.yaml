@@ -1,5 +1,5 @@
 name: company-valuation
-version: 1.0.0
+version: 1.1.0
 purpose: Interview the user, then value a listed company (FCFF DCF + comps + precedents for SAP) with a reproducible, checked Excel package.
 steps:
   - id: setup
@@ -11,7 +11,7 @@ steps:
   - id: interview
     type: ai_asks_user
     questions: questions.yaml                  # AskUserQuestion, max 4 per round, skip non-applicable
-    note: Never ask for API keys or passwords. Data-edition files are paths, never pasted content.
+    note: Never ask for API keys or passwords. Data-edition files are paths, never pasted content. Includes the valuation date (SAP 30 Sep 2026..today, others up to 5 years back).
   - id: propose_peers
     type: ai_judgment_human_check
     when: company is not SAP and peers == default

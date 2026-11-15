@@ -32,6 +32,21 @@ rounds:
             description: SAP only. Runs both and writes an edition comparison.
             value: both
             when: company == SAP
+      - id: valuation_date
+        header: Date
+        question: Which valuation date should the model use?
+        sets: valuation_date
+        options:
+          - label: Case date, 13 Nov 2026 (Recommended)
+            description: SAP only. The assignment's valuation date; reproduces the team's numbers.
+            value: null
+            when: company == SAP
+          - label: Today / latest close
+            description: The most recent completed close and the latest rates.
+            value: today
+          - label: A specific date
+            description: The user types YYYY-MM-DD. SAP, 30 Sep 2026 to today. Other tickers, up to five years back. Price, risk-free rate, beta window and roll-forward follow it.
+            value: custom
       - id: wacc
         header: WACC basis
         question: Which cost-of-capital basis should the model use?
@@ -46,6 +61,8 @@ rounds:
           - label: Custom numbers
             description: The user gives ERP, and optionally beta, risk-free rate, cost of debt, terminal growth. Enter as decimals.
             value: custom
+  - name: Details
+    questions:
       - id: weights
         header: Weighting
         question: How should the football-field blended value weight the methods?
@@ -60,8 +77,6 @@ rounds:
           - label: Equal weights
             description: Every available method counts the same.
             value: {DCF: 0.3333, Comparable companies: 0.3333, Precedent transactions: 0.3333}
-  - name: Details
-    questions:
       - id: peers
         header: Peers
         question: How should the comparable-company set be chosen?
@@ -83,22 +98,11 @@ rounds:
         sets: price
         options:
           - label: Latest close (Recommended)
-            description: SAP is pinned to the 13 Nov 2026 Xetra close; other tickers use the latest completed close.
+            description: "The completed close on the valuation date (SAP: Xetra close)."
             value: null
           - label: A specific price
             description: The user types the price in the quote currency.
             value: custom
-      - id: review
-        header: Assumptions
-        question: How much of the assumption set do you want to review before the run?
-        sets: review_mode
-        options:
-          - label: Run with defaults, review after (Recommended)
-            description: Every default carries a source and rationale in the output; change anything afterwards and re-run.
-            value: after
-          - label: Walk me through the key ones first
-            description: Terminal growth, margin path, beta, cost of debt are shown with their sources before the run.
-            value: before
       - id: outputs
         header: Outputs
         question: Which outputs do you need?

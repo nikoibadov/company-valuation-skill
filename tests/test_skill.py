@@ -88,3 +88,23 @@ def test_skill_files_are_consistent():
     for f in ("reference/methodology.md", "reference/data_sources.md", "scripts/valuate.py", "scripts/setup_env.sh"):
         assert (SKILL / f).exists(), f
     assert not list(SKILL.rglob("bloomberg.yaml")), "licensed transcription must not ship"
+
+
+def test_valuation_date_resolution(tmp_path):
+    import datetime as dt
+    today = dt.date.today().isoformat()
+    assert cfg_from(tmp_path, "company: SAP\n")["valuation_date"] == "2026-11-13"
+    assert cfg_from(tmp_path, "company: ADBE\n")["valuation_date"] == today
+    assert cfg_from(tmp_path, "company: SAP\nvaluation_date: 2026-10-20\n")["valuation_date"] == "2026-10-20"
+    assert cfg_from(tmp_path, "company: SAP\nvaluation_date: today\n")["valuation_date"] == today
+    for bad in ("company: SAP\nvaluation_date: 2026-09-01\n", "company: SAP\nvaluation_date: 2999-01-01\n",
+                "company: ADBE\nvaluation_date: 2015-01-01\n", "company: ADBE\nvaluation_date: 2999-01-01\n",
+                "company: ADBE\nvaluation_date: not-a-date\n"):
+        with pytest.raises(SystemExit):
+            cfg_from(tmp_path, bad)
+
+
+def test_date_question_in_interview():
+    q = yaml.safe_load((SKILL / "questions.yaml").read_text())
+    ids = [x["id"] for r in q["rounds"] for x in r["questions"]]
+    assert "valuation_date" in ids and ids.index("valuation_date") < ids.index("weights")
