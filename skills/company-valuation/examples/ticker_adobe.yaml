@@ -1,0 +1,4 @@
+company: ADBE
+assumptions: {erp: house, g: 0.03}
+peers: {tickers: [CRM, NOW, WDAY, INTU, ADSK, ORCL]}
+weights: {DCF: 0.6, Comparable companies: 0.4}

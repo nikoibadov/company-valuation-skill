@@ -1,0 +1,34 @@
+name: company-valuation
+version: 1.0.0
+purpose: Interview the user, then value a listed company (FCFF DCF + comps + precedents for SAP) with a reproducible, checked Excel package.
+steps:
+  - id: setup
+    type: deterministic
+    run: bash scripts/setup_env.sh            # prints the Python path to use below
+  - id: detect_sources
+    type: deterministic
+    run: python scripts/valuate.py sources     # JSON: Capital IQ / Bloomberg files found, web endpoints reachable
+  - id: interview
+    type: ai_asks_user
+    questions: questions.yaml                  # AskUserQuestion, max 4 per round, skip non-applicable
+    note: Never ask for API keys or passwords. Data-edition files are paths, never pasted content.
+  - id: propose_peers
+    type: ai_judgment_human_check
+    when: company is not SAP and peers == default
+    instruction: Propose 6-10 listed peers (same business model, similar growth and margin), explain each in one line, wait for the user's confirmation.
+  - id: write_config
+    type: ai
+    output: valuation_config.yaml              # shape: python scripts/valuate.py example
+  - id: run
+    type: deterministic
+    run: python scripts/valuate.py run --config valuation_config.yaml
+    gate: the run fails if the Excel formulas do not reproduce the Python engine
+  - id: sanity_review
+    type: ai_judgment_human_check
+    instruction: See SKILL.md section "Sanity review". Report outcome first, then the numbers, then caveats.
+  - id: iterate
+    type: loop
+    instruction: If the user changes an answer, edit the config and re-run; never hand-edit numbers in the outputs.
+  - id: log
+    type: deterministic
+    output: AI_USAGE_LOG.md                    # skeleton written by the run; complete the judgment-call sections

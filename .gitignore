@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+valuation_output/
+.cache/
+# licensed data: never commit
+bloomberg.yaml
+**/Data Assigment*/
+*.xlsx
+!tests/*.xlsx
+.DS_Store
+.pytest_cache/

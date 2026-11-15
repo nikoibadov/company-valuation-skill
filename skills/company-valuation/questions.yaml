@@ -1,0 +1,119 @@
+# The interview. SKILL.md tells the agent to ask these with AskUserQuestion, at most 4 per round, skipping any
+# whose `when` does not hold. `sets` is the config key the answer fills (see scripts/valuate.py example).
+# Free-text answers come through the automatic "Other" option.
+version: 1
+rounds:
+  - name: Scope
+    questions:
+      - id: company
+        header: Company
+        question: Which company do you want to value?
+        sets: company
+        options:
+          - label: SAP SE (full case-study model)
+            description: Segment-driven FCFF DCF, comps, precedents, DDM, Monte Carlo, 19-sheet Excel. Valuation date 13 Nov 2026.
+            value: SAP
+          - label: Another listed company
+            description: Generic FCFF DCF plus peer comps from public data. The user types the Yahoo Finance ticker (NVDA, MC.PA, 7203.T).
+            value: ask_ticker
+      - id: data_sources
+        header: Data
+        question: Which data sources should the valuation use?
+        sets: edition
+        options:
+          - label: Public web data only (Recommended)
+            description: Yahoo Finance, SEC, ECB, Bundesbank, Damodaran. Works for any company with no files.
+            value: web
+          - label: Capital IQ + Bloomberg exports
+            description: SAP only. Needs your licensed export folder and a transcription of the Bloomberg screens.
+            value: data
+            when: company == SAP
+          - label: Both editions side by side
+            description: SAP only. Runs both and writes an edition comparison.
+            value: both
+            when: company == SAP
+      - id: wacc
+        header: WACC basis
+        question: Which cost-of-capital basis should the model use?
+        sets: assumptions.erp
+        options:
+          - label: House view, ERP 5.0% (Recommended)
+            description: Low end of the German IDW/FAUB range. Risk-free from the 10-year government yield, adjusted 5-year beta.
+            value: house
+          - label: Damodaran implied ERP (live)
+            description: Market-implied premium from Damodaran's latest update plus the US default-spread adjustment (about 4.3%+), so a lower WACC.
+            value: damodaran
+          - label: Custom numbers
+            description: The user gives ERP, and optionally beta, risk-free rate, cost of debt, terminal growth. Enter as decimals.
+            value: custom
+      - id: weights
+        header: Weighting
+        question: How should the football-field blended value weight the methods?
+        sets: weights
+        options:
+          - label: 50 / 25 / 25 DCF / comps / precedents (Recommended)
+            description: Precedents are SAP only; for other tickers the weights renormalise to DCF and comps (about 67 / 33).
+            value: {DCF: 0.5, Comparable companies: 0.25, Precedent transactions: 0.25}
+          - label: DCF only
+            description: No relative-valuation blend.
+            value: {DCF: 1.0}
+          - label: Equal weights
+            description: Every available method counts the same.
+            value: {DCF: 0.3333, Comparable companies: 0.3333, Precedent transactions: 0.3333}
+  - name: Details
+    questions:
+      - id: peers
+        header: Peers
+        question: How should the comparable-company set be chosen?
+        sets: peers
+        options:
+          - label: Default screen (SAP) or AI-proposed peers (ticker)
+            description: SAP uses the built-in core set (enterprise software above 5bn EUR, positive EBIT). For a ticker the agent proposes 6-10 peers and the user confirms them.
+            value: default
+          - label: I will give the tickers
+            description: The user lists Yahoo tickers (any company), or for SAP the tickers to force in or drop from the core set.
+            value: custom
+          - label: No comps, DCF only
+            description: Skips relative valuation for tickers.
+            value: none
+            when: company != SAP
+      - id: price
+        header: Price
+        question: Which share price should the valuation compare against?
+        sets: price
+        options:
+          - label: Latest close (Recommended)
+            description: SAP is pinned to the 13 Nov 2026 Xetra close; other tickers use the latest completed close.
+            value: null
+          - label: A specific price
+            description: The user types the price in the quote currency.
+            value: custom
+      - id: review
+        header: Assumptions
+        question: How much of the assumption set do you want to review before the run?
+        sets: review_mode
+        options:
+          - label: Run with defaults, review after (Recommended)
+            description: Every default carries a source and rationale in the output; change anything afterwards and re-run.
+            value: after
+          - label: Walk me through the key ones first
+            description: Terminal growth, margin path, beta, cost of debt are shown with their sources before the run.
+            value: before
+      - id: outputs
+        header: Outputs
+        question: Which outputs do you need?
+        multiSelect: true
+        sets: outputs
+        options:
+          - label: Excel workbook
+            description: Formula-driven, recalculated and checked against the Python engine.
+            value: excel
+          - label: Charts
+            description: Football field (plus revenue mix, tornado and Monte Carlo for SAP).
+            value: charts
+          - label: Markdown summary
+            description: Headline value, method table, key numbers and sources.
+            value: summary
+          - label: AI usage log
+            description: Skeleton of the log the assignment asks for, to be completed by a human.
+            value: ai_log

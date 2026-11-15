@@ -1,0 +1,4 @@
+company: SAP
+edition: web
+assumptions: {erp: house}
+weights: {DCF: 0.50, Comparable companies: 0.25, Precedent transactions: 0.25}

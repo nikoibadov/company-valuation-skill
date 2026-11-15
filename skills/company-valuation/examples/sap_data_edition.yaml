@@ -1,0 +1,6 @@
+company: SAP
+edition: data                 # needs the licensed exports, never committed to a repo
+data_sources:
+  capiq_dir: ~/Downloads/Data Assigment 2          # contains "S&P Capital IQ/SAP/*.xlsx"
+  bloomberg_yaml: ~/Downloads/bloomberg.yaml       # your own transcription of the Bloomberg screenshots
+assumptions: {erp: house}
