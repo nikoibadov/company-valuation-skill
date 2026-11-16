@@ -2,7 +2,7 @@
 
 ## Shared conventions
 - **FCFF DCF**, mid-year discounting, 10 forecast years (5 explicit, 5 fading to terminal growth), Gordon-growth terminal value.
-- **WACC** from CAPM: risk-free = 10-year government yield (Bundesbank for EUR), beta = 5-year weekly regression vs the local index, Blume-adjusted (0.67 raw + 0.33), ERP 5.0% by default, cost of debt = risk-free + a rating spread, tax shield at the marginal rate, market-value weights.
+- **WACC** from CAPM: risk-free = 10-year government yield (Bundesbank for EUR), beta = 5-year weekly regression vs the local index, Blume-adjusted (0.67 raw + 0.33), equity risk premium by market (5.0% house view for euro companies and SAP; Damodaran's implied US premium for US-dollar companies), cost of debt = risk-free + a rating spread, tax shield at the marginal rate, market-value weights.
 - **Tax**: effective rate in the explicit years, fading to the statutory (marginal) rate in the fade years; the statutory rate is also the debt tax shield (SAP: 29.93%, German corporate tax + solidarity surcharge 15.825% + trade tax 14.105%).
 - **Equity bridge**: EV + cash and investments - debt incl. leases - pensions - non-controlling interests - preferred stock, divided by shares.
 - **Comps**: NTM multiples (EV/sales, EV/EBIT, P/E) at the 25th, median and 75th percentile of the peer set, plus a growth-adjusted EV/sales regression on the Rule of 40.
@@ -31,7 +31,7 @@ The workbook has the SAP layout: Cover, Summary, Assumptions (every input with s
 - Banks, insurers, REITs, loss-making and pre-revenue companies, and companies with a financing arm need different models; the any-ticker model refuses them.
 - Yahoo data can be wrong or stale; check price, shares, debt and revenue estimates against the company's filings before relying on the number.
 - The any-ticker margin path is flat by default (normalised only at a cyclical extreme). A company mid-turnaround or with a structurally rising margin needs `margin_target` set by the user.
-- The house ERP of 5.0% on top of a US risk-free rate above 5% gives US companies a WACC above 10%; most large US names then value below the market. Read the reverse DCF, and test the Damodaran ERP.
+- With a US risk-free rate above 5%, US companies get a WACC near 10% even on the lower implied US premium; several large US names then value below the market. Read the reverse DCF before concluding the stock is overpriced.
 - Precedent transactions carry a control premium; read them as a cross-check, not a price.
 
 ## Valuation date

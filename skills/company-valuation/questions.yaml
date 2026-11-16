@@ -52,11 +52,11 @@ rounds:
         question: Which cost-of-capital basis should the model use?
         sets: assumptions.erp
         options:
-          - label: House view, ERP 5.0% (Recommended)
-            description: Low end of the German IDW/FAUB range. Risk-free from the 10-year government yield, adjusted 5-year beta.
+          - label: House view by market (Recommended)
+            description: ERP 5.0% for SAP and other euro companies (low end of the German IDW/FAUB range); Damodaran's implied US premium (about 4.4%) for US-dollar companies. Risk-free from the 10-year government yield, adjusted 5-year beta.
             value: house
-          - label: Damodaran implied ERP (live)
-            description: Market-implied premium from Damodaran's latest update plus the US default-spread adjustment (about 4.3%+), so a lower WACC.
+          - label: Damodaran implied ERP for any company (live)
+            description: Market-implied US premium plus Damodaran's US default-spread adjustment (about 4.6%), applied whatever the currency. For SAP this lowers the WACC.
             value: damodaran
           - label: Custom numbers
             description: The user gives ERP, and optionally beta, risk-free rate, cost of debt, terminal growth. Enter as decimals.

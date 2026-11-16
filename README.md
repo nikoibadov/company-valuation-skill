@@ -52,7 +52,7 @@ Claude asks these before running anything (`skills/company-valuation/questions.y
 | 1 | **Company** | SAP SE (full case-study model) / any listed company (you give the Yahoo ticker) |
 | 2 | **Data sources** | Public web data (default) / Capital IQ + Bloomberg exports (SAP) / both side by side (SAP) |
 | 3 | **Valuation date** | The case date 13 Nov 2026 (SAP) / today / a specific date you type |
-| 4 | **WACC basis** | House view, ERP 5.0% / Damodaran implied ERP (live) / custom numbers |
+| 4 | **WACC basis** | House view by market (ERP 5.0% for euro companies, Damodaran implied US premium for US-dollar companies) / Damodaran implied ERP for any company / custom numbers |
 | 5 | **Weighting** | 50/25/25 DCF/comps/precedents / DCF only / equal / custom |
 | 6 | **Peers** | Default screen (SAP) or AI-proposed set you confirm (other tickers) / your own tickers / none |
 | 7 | **Price** | Close on the valuation date / a price you type |
@@ -147,7 +147,7 @@ tests/              offline tests: pytest tests
 ## Limits
 
 - Banks, insurers, REITs, loss-making companies and companies with a financing arm (car makers, machinery) need other models; the engine refuses them with the reason.
-- With the 5.0% house ERP and a US risk-free rate above 5%, large US companies get a WACC above 10% and usually value below the market. The reverse DCF in the summary shows what the price implies.
+- With a US risk-free rate above 5%, large US companies get a WACC near 10% and several value below the market. The reverse DCF in the summary shows what the price implies.
 - Yahoo Finance data can be stale or wrong. Check price, shares, debt and consensus against filings before relying on a number.
 - The any-ticker model holds the margin flat unless you set a target; a company in turnaround needs your view.
 - The any-ticker model has no segment build and no precedent transactions (no public data); their weight goes to DCF and comps.

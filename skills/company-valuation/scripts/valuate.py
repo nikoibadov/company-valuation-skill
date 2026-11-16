@@ -240,7 +240,8 @@ valuation_date: null          # YYYY-MM-DD or "today". null = SAP 13 Nov 2026 (c
                               # SAP range 2026-09-30..today; other tickers up to 5 years back. Drives price, rates, beta window, roll-forward
 price: null                   # null = close on the valuation date; or a number to override
 assumptions:
-  erp: house                  # house (5.0%) | damodaran (live implied ERP) | a number such as 0.0429
+  erp: house                  # house (5.0% for SAP and euro companies, Damodaran implied US premium for US-dollar
+                              # companies) | damodaran (implied premium + default spread, any currency) | a number such as 0.0429
   # beta: 0.98              # optional overrides, decimals: rf, beta, kd, g, tax_wacc (any company); tax, tax_terminal,
                               # margin_target, nwc_pct, capex_pct (tickers); pension, other_nonop in reporting-currency units
 weights:                      # football-field blend, renormalised over the methods that exist
