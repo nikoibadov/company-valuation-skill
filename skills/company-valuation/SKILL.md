@@ -84,10 +84,11 @@ Carlo charts, and `edition_compare.md` when both editions ran.
 
 Read the summary and check before presenting. Flag anything that trips:
 
-- Upside or downside beyond about 40%. Usually an input is off (margin, growth, peers) rather than the market being wrong. Say so and show what moves it (the sensitivity tables, the tornado for SAP).
+- Upside or downside beyond about 40%. Usually an input is off (margin, growth, peers) rather than the market being wrong. Say so and show what moves it (the sensitivity tables, the tornado). For a ticker, quote the reverse DCF from the summary: the margin, growth or WACC the share price implies, against the company's own history.
+- Any line starting "Check:" in the summary (for example consensus revenue far from the last fiscal year): repeat it to the user.
 - Terminal value above about 75% of enterprise value, or WACC within 2 points of terminal growth.
 - Peer EV/EBIT quartiles very wide, or fewer than 5 peers in a multiple. Say the comps bar is weak.
-- A company with negative operating income, a bank, an insurer or a REIT: the one-segment FCFF model does not fit; tell the user and stop.
+- A bank, an insurer, a REIT, a loss-making company or one with a captive financing arm (car makers, machinery): `valuate.py` stops with "Model not applicable" and the reason. Pass the reason on; do not work around it.
 - Valuation date earlier than today: the look-ahead warning must appear in the report, not only in the files.
 - SAP: the data edition keeps the 5 Nov 2026 Bloomberg rates with the 13 Nov price; the web edition uses 13 Nov market data. Name the difference when both are shown.
 

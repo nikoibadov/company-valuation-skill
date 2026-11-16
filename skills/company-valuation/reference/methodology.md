@@ -16,15 +16,22 @@ The workbook has the SAP layout: Cover, Summary, Assumptions (every input with s
 
 - **Base year** = last reported fiscal year; **anchor** = latest quarterly balance sheet on or before the valuation date; the current fiscal year is valued for the part still to come (stub), then the value is rolled forward to the valuation date at Ke (the SAP convention).
 - **Revenue**: one segment; consensus for FY1-FY2 (Yahoo Finance), FY3-FY5 linear towards the midpoint of FY2 growth and g, FY6-FY10 fade to g.
-- **Margin**: FY1 = trailing operating margin, linear to a target by FY5 (target = FY1 unless set). **Tax**: 3-year average effective rate, fading to the statutory rate of the company's country. **D&A, capex**: 3-year averages. **Working capital**: trade working capital (receivables + inventory - payables) as % of revenue, applied to revenue growth.
+- **Revenue beyond consensus**: growth above 25% is not extrapolated past FY2, and FY5 growth is at most 15%.
+- **Margin**: FY1 = trailing-twelve-month operating margin (last four quarters), linear to a target by FY5. The target is the same margin unless it sits more than 5 points outside the range of the reported fiscal years (a cyclical peak or trough); then it is set halfway back to their average.
+- **Tax**: 3-year average effective rate, fading to the statutory rate of the company's country.
+- **D&A, capex**: 3-year averages in the explicit years. **Terminal capex** = D&A + g x net PP&E / revenue: in a steady state capex covers depreciation plus the growth of the asset base, so a build-out (or a pause) is not extrapolated for ever.
+- **Working capital**: trade working capital (receivables + inventory - payables - deferred revenue) as % of revenue, applied to revenue growth.
+- **Reverse DCF**: the target margin, growth, WACC or terminal growth at which the DCF equals the share price, each solved alone, shown against the company's history.
+- **Guard**: banks, insurers, REITs, loss-makers, captive-finance companies and forecasts with negative long-run free cash flow are refused with the reason.
 - **Bridge**: cash and short-term investments, long-term financial investments, total debt, minority interests and preferred stock from the quarterly balance sheet; pensions and other items are inputs (Yahoo does not report them).
 - **Cross-checks**: dividend discount model (if the company pays a dividend), Monte Carlo (2,000 runs), tornado, four sensitivity grids, FCFF bridge from the model definition to reported free cash flow.
 - **Dropped for tickers** (no public data): segment build, precedent transactions (weight redistributed to DCF and comps), intangibles, sum of the parts, bottom-up beta.
 
 ## Where it stops
-- Banks, insurers, REITs, loss-making companies and pre-revenue companies need different models.
+- Banks, insurers, REITs, loss-making and pre-revenue companies, and companies with a financing arm need different models; the any-ticker model refuses them.
 - Yahoo data can be wrong or stale; check price, shares, debt and revenue estimates against the company's filings before relying on the number.
-- The any-ticker margin path is flat by default. A company mid-turnaround or with a structurally rising margin needs `margin_target` set by the user.
+- The any-ticker margin path is flat by default (normalised only at a cyclical extreme). A company mid-turnaround or with a structurally rising margin needs `margin_target` set by the user.
+- The house ERP of 5.0% on top of a US risk-free rate above 5% gives US companies a WACC above 10%; most large US names then value below the market. Read the reverse DCF, and test the Damodaran ERP.
 - Precedent transactions carry a control premium; read them as a cross-check, not a price.
 
 ## Valuation date

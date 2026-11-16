@@ -204,7 +204,10 @@ def run_generic(cfg: dict, out: Path) -> dict:
     if cfg["price"]:
         ov["price"] = float(cfg["price"])
     peers = list(cfg["peers"]["tickers"])
-    res = generic.run(cfg["company"], overrides=ov, peer_tickers=peers, vdate=cfg["valuation_date"])
+    try:
+        res = generic.run(cfg["company"], overrides=ov, peer_tickers=peers, vdate=cfg["valuation_date"])
+    except generic.ModelNotApplicable as e:
+        raise SystemExit(f"Model not applicable. {e}")
     p = res["inputs"]
     cur = {"EUR": "€", "USD": "$", "GBP": "£", "JPY": "¥", "CHF": "CHF "}.get(p["q_ccy"], p["q_ccy"] + " ")
     today = cfg["valuation_date"]

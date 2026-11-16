@@ -77,7 +77,7 @@ In `valuation_output/`:
 
 | File | Content |
 |---|---|
-| `SAP_Valuation_<edition>.xlsx` / `<TICKER>_Valuation.xlsx` | Formula-driven workbook with a live Bear/Base/Bull selector and an integrity-checks sheet. SAP: 19 sheets. Tickers: the same template (Assumptions with sources, WACC, Forecast, DCF, DDM, Checks, Scenarios, Sensitivity, Monte Carlo, Comps, Historicals, FCFF bridge); sheets with no data for the company are dropped |
+| `SAP_Valuation_<edition>.xlsx` / `<TICKER>_Valuation.xlsx` | Formula-driven workbook with a live Bear/Base/Bull selector and an integrity-checks sheet. SAP: 19 sheets. Tickers: the same template (Assumptions with sources, WACC, Forecast, DCF, DDM, Checks, Scenarios, Sensitivity, Reverse DCF, Monte Carlo, Comps, Historicals, FCFF bridge); sheets with no data for the company are dropped |
 | `football_*.png` | The football field, tornado and Monte Carlo charts (SAP also: revenue mix) |
 | `summary_*.md` / `<TICKER>_summary.md` | Headline value vs price, method table, key numbers, where each input comes from, caveats |
 | `valuation_config_used.yaml` | The exact inputs, so the run can be repeated |
@@ -146,7 +146,8 @@ tests/              offline tests: pytest tests
 
 ## Limits
 
-- Banks, insurers, REITs and loss-making companies need other models; the skill says so and stops.
+- Banks, insurers, REITs, loss-making companies and companies with a financing arm (car makers, machinery) need other models; the engine refuses them with the reason.
+- With the 5.0% house ERP and a US risk-free rate above 5%, large US companies get a WACC above 10% and usually value below the market. The reverse DCF in the summary shows what the price implies.
 - Yahoo Finance data can be stale or wrong. Check price, shares, debt and consensus against filings before relying on a number.
 - The any-ticker model holds the margin flat unless you set a target; a company in turnaround needs your view.
 - The any-ticker model has no segment build and no precedent transactions (no public data); their weight goes to DCF and comps.

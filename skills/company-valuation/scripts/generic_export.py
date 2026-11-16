@@ -51,6 +51,17 @@ def summary_md(res: dict, weights: dict, currency: str, valuation_date: str) -> 
     for it in generic.football_items(res):
         mid = f"{currency}{it['mid']:.0f}" if it["mid"] is not None else "-"
         out.append(f"| {it['label']} | {currency}{it['low']:.0f} | {mid} | {currency}{it['high']:.0f} |")
+    rv = res.get("reverse")
+    if rv:
+        f = lambda v, d=1: "no solution in range" if v is None else f"{v * 100:.{d}f}%"  # noqa: E731
+        out += ["", "## What the share price implies (reverse DCF)",
+                "One driver at a time, all else at the base case, until the DCF value equals the share price:",
+                f"- Target EBIT margin {f(rv['margin_target']['implied'])} (base {f(rv['margin_target']['base'])})",
+                f"- Revenue growth FY2-FY5 {f(rv['growth']['implied'])} a year (base {f(rv['growth']['base'])})",
+                f"- WACC {f(rv['wacc']['implied'], 2)} (base {f(rv['wacc']['base'], 2)})",
+                f"- Terminal growth {f(rv['g']['implied'], 2)} (base {f(rv['g']['base'], 2)})"]
+    for wmsg in res.get("meta", {}).get("warnings", []):
+        out += ["", f"**Check:** {wmsg}"]
     peers = res["peers"]
     out += ["", "## Key numbers",
             f"- WACC {d['wacc']*100:.2f}%: Ke {d['ke']*100:.2f}% = {p['rf']*100:.2f}% + {p['beta']:.2f} x {p['erp']*100:.2f}%; "
