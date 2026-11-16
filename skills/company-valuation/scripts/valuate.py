@@ -37,7 +37,9 @@ DEFAULTS = {
 }
 SAP_KEYS = {"rf", "beta", "erp", "kd", "tax_wacc", "g", "sbc_addback"}
 GENERIC_KEYS = {"rf": "rf", "beta": "beta", "erp": "erp", "kd": "kd", "tax_wacc": "tax_wacc", "g": "g",
-                "tax": "tax", "margin_target": "margin_target", "margin0": "margin0"}
+                "tax": "tax", "tax_terminal": "tax_terminal", "margin_target": "margin_target", "margin0": "margin0",
+                "nwc_pct": "nwc_pct", "da_pct": "da_pct", "capex_pct": "capex_pct", "capex_terminal": "capex_terminal",
+                "sbc_addback": "sbc_addback", "pension": "pension", "other_nonop": "other_nonop"}
 
 
 def _merge(base: dict, new: dict) -> dict:
@@ -75,9 +77,12 @@ def load_config(path: str | None) -> dict:
             cfg["assumptions"][k] = float(v)
         except (TypeError, ValueError):
             errs.append(f"assumption {k} must be a number")
-    for k in ("erp", "rf", "kd", "g", "tax_wacc", "tax"):
+    bounds = {"erp": (0, 0.15), "rf": (-0.01, 0.15), "kd": (0, 0.2), "g": (-0.02, 0.06), "tax_wacc": (0, 0.5), "tax": (0, 0.5),
+              "tax_terminal": (0, 0.5), "margin_target": (-0.5, 0.9), "margin0": (-0.5, 0.9), "nwc_pct": (-0.5, 0.5),
+              "da_pct": (0, 0.5), "capex_pct": (0, 0.5), "capex_terminal": (0, 0.5)}
+    for k, (lo, hi) in bounds.items():
         v = cfg["assumptions"].get(k)
-        if isinstance(v, float) and not 0 <= v < 0.3:
+        if isinstance(v, float) and not lo <= v <= hi:
             errs.append(f"{k}={v} looks wrong: enter percentages as decimals (0.05 for 5%)")
     try:
         cfg["valuation_date"] = resolve_date(cfg["valuation_date"], cfg["is_sap"])
@@ -233,7 +238,8 @@ valuation_date: null          # YYYY-MM-DD or "today". null = SAP 13 Nov 2026 (c
 price: null                   # null = close on the valuation date; or a number to override
 assumptions:
   erp: house                  # house (5.0%) | damodaran (live implied ERP) | a number such as 0.0429
-  # beta: 0.98              # optional overrides, decimals: rf, beta, kd, g, tax_wacc (any company); tax, margin_target (tickers)
+  # beta: 0.98              # optional overrides, decimals: rf, beta, kd, g, tax_wacc (any company); tax, tax_terminal,
+                              # margin_target, nwc_pct, capex_pct (tickers); pension, other_nonop in reporting-currency units
 weights:                      # football-field blend, renormalised over the methods that exist
   DCF: 0.50
   Comparable companies: 0.25

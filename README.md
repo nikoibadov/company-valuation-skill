@@ -77,8 +77,8 @@ In `valuation_output/`:
 
 | File | Content |
 |---|---|
-| `SAP_Valuation_<edition>.xlsx` / `<TICKER>_Valuation.xlsx` | Formula-driven workbook. SAP: 19 sheets with a live Bear/Base/Bull selector. Tickers: Inputs, WACC, a live DCF sheet, comps, scenarios, notes |
-| `football_*.png` | The football field (SAP also: revenue mix, tornado, Monte Carlo) |
+| `SAP_Valuation_<edition>.xlsx` / `<TICKER>_Valuation.xlsx` | Formula-driven workbook with a live Bear/Base/Bull selector and an integrity-checks sheet. SAP: 19 sheets. Tickers: the same template (Assumptions with sources, WACC, Forecast, DCF, DDM, Checks, Scenarios, Sensitivity, Monte Carlo, Comps, Historicals, FCFF bridge); sheets with no data for the company are dropped |
+| `football_*.png` | The football field, tornado and Monte Carlo charts (SAP also: revenue mix) |
 | `summary_*.md` / `<TICKER>_summary.md` | Headline value vs price, method table, key numbers, where each input comes from, caveats |
 | `valuation_config_used.yaml` | The exact inputs, so the run can be repeated |
 | `AI_USAGE_LOG.md` | Skeleton of the log the assignment asks for; a human fills in the judgment calls |
@@ -149,6 +149,7 @@ tests/              offline tests: pytest tests
 - Banks, insurers, REITs and loss-making companies need other models; the skill says so and stops.
 - Yahoo Finance data can be stale or wrong. Check price, shares, debt and consensus against filings before relying on a number.
 - The any-ticker model holds the margin flat unless you set a target; a company in turnaround needs your view.
+- The any-ticker model has no segment build and no precedent transactions (no public data); their weight goes to DCF and comps.
 - Precedent transactions carry a control premium; treat them as a cross-check, not a price.
 - Education only, not investment advice.
 
